@@ -45,13 +45,24 @@ Chaque exécution crée une nouvelle version du modèle dans MLflow :
 uv run src/train/train.py
 ```
 
-### 4. Maintenance Docker
+### 4. Maintenance et Nettoyage Radical
 En cas de problème de daemon ou pour tout remettre à zéro :
 ```bash
 docker compose down -v  # Supprime tout, y compris les volumes (données MinIO)
 docker ps               # Vérifie que les 4 conteneurs sont "Up"
 ```
+ 
+Si ton environnement Docker devient instable ou si tu manques d'espace disque, utilise ces commandes. 
 
+> [!WARNING]
+> **Attention :** Le nettoyage des volumes supprimera toutes les données persistantes (historique MLflow et fichiers dans MinIO) qui ne sont pas activement liées à un conteneur en cours d'exécution.  
+```bash
+systemctl --user restart docker-desktop # Relance le moteur Docker Desktop (Utile en cas d'erreur "docker.sock")
+docker builder prune -a --force # Supprime l'intégralité du cache de build (Force une reconstruction "neuve" des images)
+docker image prune -a -f # Supprime toutes les images non utilisées (Nettoyage massif du stockage)
+docker volume prune -f # Supprime les volumes orphelins (Efface les données MinIO/MLflow non actives) 
+docker container prune -f # Supprime tous les conteneurs arrêtés
+```
 ---
 
 ## Procédure de Test des Modèles (A/B Testing)
