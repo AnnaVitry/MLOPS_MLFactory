@@ -93,7 +93,7 @@ model_type = "LogisticRegression"
 model = RandomForestClassifier(n_estimators=100, random_state=42)
 model_type = "RandomForest"
 ```
-et décommenter toutes les lignes qui ont le commentaire "# Décommenter pour RandomTree". Obviously *\deadass, with a Severus Snape voice*\)
+et décommenter toutes les lignes qui ont le commentaire "# Décommenter pour RandomTree". Obviously \*deadass, with a Severus Snape voice\*)
 
 **Note sur la traçabilité :** Pense à modifier `n_estimators` pour créer des versions (V1, V2, V3) et observer le changement dynamique sur l'interface.
 
