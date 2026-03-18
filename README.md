@@ -95,7 +95,7 @@ model_type = "RandomForest"
 ```
 et décommenter toutes les lignes qui ont le commentaire "*# Décommenter pour RandomForest*". ***𝑶𝒃-𝒗𝒊𝒐𝒖𝒔-𝒍𝒚.*** ⟶\* *deadass, with a Severus Snape voice* \*
 
-**Note sur la traçabilité :** Pense à modifier `n_estimators` pour créer des versions (V1, V2, V3) et observer le changement dynamique sur l'interface.
+>**Note sur la traçabilité :** Pense à modifier `n_estimators` pour créer des versions (V1, V2, V3) et observer le changement dynamique sur l'interface.
 
 ---
 
