@@ -1,7 +1,7 @@
-Module Train (Entraînement)
-===========================
+Module Front (Interface)
+========================
 
-.. automodule:: train.train
+.. automodule:: src.front.app
    :members:
    :undoc-members:
    :show-inheritance:

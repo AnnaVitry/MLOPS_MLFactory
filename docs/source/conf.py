@@ -23,6 +23,18 @@ extensions = [
     # "sphinxcontrib.bibtex", # (Désactivé) Servirait à gérer une bibliographie pour citer des papiers de recherche
 ]
 
+# --- Astuce MLOps : Simuler les librairies lourdes ---
+autodoc_mock_imports = [
+    "fastapi",
+    "pydantic",
+    "mlflow",
+    "sklearn",
+    "streamlit",
+    "boto3",
+    "requests",
+    "dotenv",
+]
+
 templates_path = ["_templates"]
 exclude_patterns = []
 language = "fr"

@@ -1,7 +1,7 @@
 Module Train (Entraînement)
 ===========================
 
-.. automodule:: train.train
+.. automodule:: src.train.train
    :members:
    :undoc-members:
    :show-inheritance:
