@@ -2,7 +2,7 @@
 
 Ce projet implémente une usine MLOps complète pour le classement du dataset Iris. Il intègre le tracking d'expériences, un registre de modèles, un stockage d'artefacts S3 et une API capable de recharger les modèles "à chaud" sans interruption de service.
 
-## 📂 Arborescence du Projet
+## Arborescence du Projet
 
 ```bash
 MLOPS_MLFACTORY/
@@ -25,7 +25,7 @@ MLOPS_MLFACTORY/
 
 ---
 
-## 🛠️ Commandes de Pilotage
+## Commandes de Pilotage
 
 ### 1. Démarrage de l'infrastructure
 Pour lancer tous les services (MinIO, MLflow, API, Front) :
@@ -54,7 +54,7 @@ docker ps               # Vérifie que les 4 conteneurs sont "Up"
 
 ---
 
-## 🔬 Procédure de Test des Modèles (A/B Testing)
+## Procédure de Test des Modèles (A/B Testing)
 
 Le script `src/train/train.py` est conçu pour basculer facilement entre deux algorithmes.
 
@@ -88,7 +88,7 @@ et décommenter toutes les lignes qui ont le commentaire "# Décommenter pour Ra
 
 ---
 
-## 🔄 Fonctionnement du Rechargement à Chaud (Hot Reload)
+## Fonctionnement du Rechargement à Chaud (Hot Reload)
 
 L'API (`src/api/main.py`) utilise un mécanisme de cache intelligent pour éviter les redémarrages manuels :
 
@@ -100,7 +100,7 @@ L'API (`src/api/main.py`) utilise un mécanisme de cache intelligent pour évite
 
 ---
 
-## 🌐 Accès aux Services
+## Accès aux Services
 
 | Service | URL | Usage |
 | :--- | :--- | :--- |
@@ -111,7 +111,7 @@ L'API (`src/api/main.py`) utilise un mécanisme de cache intelligent pour évite
 
 ---
 
-## ⚠️ Troubleshooting (Dépannage)
+## Troubleshooting (Dépannage)
 
 * **Erreur 404 sur /predict** : 
   - Vérifie dans MLflow si l'alias `production` est bien assigné à une version.
