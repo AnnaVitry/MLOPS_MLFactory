@@ -41,7 +41,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # --- CONQUÊTE DE L'API ---
-      - name: Extraction des métadonnées (API)
+      - name: 🏷️ Extraction des métadonnées (API)
         id: meta-api
         uses: docker/metadata-action@v5
         with:
@@ -50,16 +50,17 @@ jobs:
             type=raw,value=latest
             type=sha,prefix=
 
-      - name: Build et Push (API)
+      - name: 🏗️ Build et Push (API)
         uses: docker/build-push-action@v5
         with:
-          context: ./src/api
+          context: .
+          file: ./src/api/Dockerfile 
           push: true
           tags: ${{ steps.meta-api.outputs.tags }}
           labels: ${{ steps.meta-api.outputs.labels }}
 
       # --- CONQUÊTE DU FRONT ---
-      - name: Extraction des métadonnées (Front)
+      - name: 🏷️ Extraction des métadonnées (Front)
         id: meta-front
         uses: docker/metadata-action@v5
         with:
@@ -68,10 +69,11 @@ jobs:
             type=raw,value=latest
             type=sha,prefix=
 
-      - name: Build et Push (Front)
+      - name: 🏗️ Build et Push (Front)
         uses: docker/build-push-action@v5
         with:
-          context: ./src/front
+          context: .
+          file: ./src/front/Dockerfile
           push: true
           tags: ${{ steps.meta-front.outputs.tags }}
           labels: ${{ steps.meta-front.outputs.labels }}
