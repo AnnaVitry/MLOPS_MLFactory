@@ -16,7 +16,9 @@ env:
 # Définition des permissions globales nécessaires
 permissions:
   # contents: write    # Pour pousser la doc sur gh-pages
-  packages: write    # Pour pousser les images Docker sur GHCR
+  packages: write   # Pour pousser les images Docker sur GHCR
+  pages: write      # Autorise l'écriture sur GitHub Pages
+  id-token: write   # Autorise l'authentification sécurisée
 
 jobs:
   # ==========================================
