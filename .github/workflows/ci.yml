@@ -37,7 +37,7 @@ jobs:
       - name: Configuration de Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
 
       - name: Installation et Linting
         # Création d'un venv, activation, installation et exécution
@@ -61,7 +61,7 @@ jobs:
       
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
           
       - name: Installation et Compilation
         # Même logique : environnement virtuel isolé pour Sphinx

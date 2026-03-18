@@ -8,44 +8,70 @@ on:
     branches:
       - main
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+# Définition des permissions globales nécessaires
 permissions:
-  contents: write
+  # contents: write    # Pour pousser la doc sur gh-pages
+  packages: write    # Pour pousser les images Docker sur GHCR
 
 jobs:
-  deploy-docs:
-    name: Deploy Sphinx to GH Pages
+  # ==========================================
+  # BUILD & PUSH DES IMAGES DOCKER
+  # ==========================================
+  build-and-push-images:
+    name: Build & Push Docker Images
     runs-on: ubuntu-latest
-    
+    # On s'assure que la CI est au vert avant de construire
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
     steps:
       - name: Récupération du code
         uses: actions/checkout@v4
-        
-      - name: Configuration Python
-        uses: actions/setup-python@v5
+
+      - name: Connexion au GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          python-version: "3.12"
-          
-      - name: Build de la version finale (avec venv isolé)
-        run: |
-          pip install uv
-          
-          # 1. Création de l'environnement virtuel
-          uv venv
-          
-          # 2. Activation de l'environnement
-          source .venv/bin/activate
-          
-          # 3. Installation SANS le flag --system
-          uv pip install sphinx sphinx-rtd-theme myst-parser
-          
-          # 4. Compilation
-          cd docs
-          make html
-          
-      - name: Déploiement GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          # Le token est fourni automatiquement par GitHub
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- CONQUÊTE DE L'API ---
+      - name: Extraction des métadonnées (API)
+        id: meta-api
+        uses: docker/metadata-action@v5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/build/html
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=
+
+      - name: Build et Push (API)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/api
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+
+      # --- CONQUÊTE DU FRONT ---
+      - name: Extraction des métadonnées (Front)
+        id: meta-front
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-front
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=
+
+      - name: Build et Push (Front)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/front
+          push: true
+          tags: ${{ steps.meta-front.outputs.tags }}
+          labels: ${{ steps.meta-front.outputs.labels }}
