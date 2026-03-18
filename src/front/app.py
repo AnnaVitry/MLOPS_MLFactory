@@ -1,49 +1,86 @@
+"""Interface utilisateur Streamlit pour l'usine MLOps Iris."""
+
 import os
 
-import pandas as pd
 import requests
 import streamlit as st
+from dotenv import load_dotenv
+from requests.exceptions import RequestException
 
-st.set_page_config(page_title="ML Factory", layout="wide")
+load_dotenv()
 
-# Paramètres
-API_URL = os.getenv("API_URL", "http://api:8000/predict")
-DATA_PATH = "data/iris_test.csv"
+# L'URL de l'API est récupérée depuis l'environnement, sinon on pointe sur le localhost Docker
+API_URL = os.getenv("API_URL", "http://localhost:8000/predict")
 
-st.title("🌸 ML Factory : Inférence Zero-Downtime")
 
-if os.path.exists(DATA_PATH):
-    df = pd.read_csv(DATA_PATH)
-    sample_idx = st.sidebar.number_input("Choisir une ligne", 0, len(df) - 1, 0)
-    row = df.iloc[sample_idx]
+def get_prediction(data: dict) -> dict | None:
+    """
+    Envoie les données saisies à l'API FastAPI et récupère la prédiction.
 
-    # Utilisation des nouveaux noms sans (cm)
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Sepal Length cm", row["sepal_length"])
-    col2.metric("Sepal Width cm", row["sepal_width"])
-    col3.metric("Petal Length cm", row["petal_length"])
-    col4.metric("Petal Width cm", row["petal_width"])
+    Args:
+        data (dict): Dictionnaire contenant les dimensions de la fleur.
 
-    if st.button("🚀 Lancer la prédiction"):
+    Returns:
+        dict | None: La réponse JSON de l'API, ou None si l'API est injoignable.
+    """
+    try:
+        # Un timeout est crucial en production pour ne pas bloquer l'interface
+        response = requests.post(API_URL, json=data, timeout=5)
+        response.raise_for_status()
+        return response.json()
+    except RequestException as e:
+        st.error(f"⚠️ Erreur de communication avec l'API : {e}")
+        return None
+
+
+def main() -> None:
+    """Point d'entrée principal de l'application Streamlit."""
+    st.set_page_config(page_title="Iris ML Factory", page_icon="🌸")
+    st.title("🌸 Prédiction d'Iris - ML Factory")
+    st.write("Entrez les dimensions de la fleur pour deviner son espèce.")
+
+    # Création d'un formulaire pour éviter de recharger la page à chaque chiffre tapé
+    with st.form("iris_form"):
+        col1, col2 = st.columns(2)
+
+        with col1:
+            sepal_length = st.number_input(
+                "Longueur du sépale", min_value=0.0, value=5.1
+            )
+            sepal_width = st.number_input("Largeur du sépale", min_value=0.0, value=3.5)
+
+        with col2:
+            petal_length = st.number_input(
+                "Longueur du pétale", min_value=0.0, value=1.4
+            )
+            petal_width = st.number_input("Largeur du pétale", min_value=0.0, value=0.2)
+
+        submit = st.form_submit_button("🚀 Lancer la prédiction")
+
+    if submit:
         payload = {
-            "sepal_length": float(row["sepal_length"]),
-            "sepal_width": float(row["sepal_width"]),
-            "petal_length": float(row["petal_length"]),
-            "petal_width": float(row["petal_width"]),
+            "sepal_length": sepal_length,
+            "sepal_width": sepal_width,
+            "petal_length": petal_length,
+            "petal_width": petal_width,
         }
-        try:
-            response = requests.post(API_URL, json=payload)
-            response.raise_for_status()
-            result = response.json()
 
-            prediction_idx = result.get("prediction")
+        with st.spinner("Interrogation du Model Registry..."):
+            result = get_prediction(payload)
+
+        if result:
+            version = result.get("model_version", "Inconnue")
+            prediction_idx = result.get("prediction", 0)
+
             target_names = ["Setosa", "Versicolor", "Virginica"]
             flower_name = target_names[prediction_idx]
 
-            version = result.get("model_version", "Inconnue")
-            st.success(f"### Résultat : {result.get('prediction')} = {flower_name}")
-            st.info(f"Modèle utilisé : Version {version}")
-        except Exception as e:
-            st.error(f"Erreur API : {e}")
-else:
-    st.error("Générez d'abord le CSV avec underscores.")
+            st.success(f"### Résultat : {flower_name}")
+            st.caption(
+                f"ID Classe : {prediction_idx} | Source : MLflow Registry v{version}"
+            )
+
+
+# Exécution standard en Python
+if __name__ == "__main__":
+    main()
