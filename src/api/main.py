@@ -1,3 +1,5 @@
+"""Module principal de l'API FastAPI pour l'inférence MLOps."""
+
 import os
 
 import mlflow
@@ -28,6 +30,16 @@ state = {"model": None, "version": None}
 
 
 class IrisData(BaseModel):
+    """
+    Schéma de validation des données d'entrée.
+
+    Attributes:
+        sepal_length (float): Longueur du sépale en cm.
+        sepal_width (float): Largeur du sépale en cm.
+        petal_length (float): Longueur du pétale en cm.
+        petal_width (float): Largeur du pétale en cm.
+    """
+
     sepal_length: float
     sepal_width: float
     petal_length: float
@@ -35,7 +47,15 @@ class IrisData(BaseModel):
 
 
 def load_production_model():
-    """Vérifie l'alias 'Production' et recharge si nécessaire [cite: 105, 106]"""
+    """
+    Vérifie l'alias cible dans MLflow et recharge le modèle en mémoire si nécessaire.
+
+    Returns:
+        tuple: Un tuple contenant l'objet modèle chargé et la version sous forme de chaîne.
+
+    Raises:
+        HTTPException: Si le serveur MLflow est injoignable ou l'alias introuvable.
+    """
     try:
         # 1. On demande quelle est la version actuelle de l'alias 'Production' [cite: 108]
         alias_info = client.get_model_version_by_alias(MODEL_NAME, MODEL_ALIAS)
@@ -55,6 +75,15 @@ def load_production_model():
 
 @app.post("/predict")
 def predict(data: IrisData):
+    """
+    Exécute une inférence sur les données fournies en utilisant le modèle de production.
+
+    Args:
+        data (IrisData): Les caractéristiques de la fleur Iris.
+
+    Returns:
+        dict: La classe prédite, la version du modèle utilisée et le statut de la requête.
+    """
     # Récupération dynamique du modèle
     model, version = load_production_model()
 
@@ -76,4 +105,10 @@ def predict(data: IrisData):
 
 @app.get("/health")
 def health():
+    """
+    Vérifie l'état de santé de l'API.
+
+    Returns:
+        dict: Un dictionnaire confirmant que l'API est en ligne.
+    """
     return {"status": "up"}

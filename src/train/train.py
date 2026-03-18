@@ -1,3 +1,5 @@
+"""Script d'entraînement et d'enregistrement des modèles dans le Model Registry."""
+
 import os
 
 import boto3
@@ -29,7 +31,10 @@ model_alias = os.getenv("MODEL_ALIAS", "production")
 
 
 def prepare_minio():
-    """Vérifie si le bucket 'mlflow' existe dans MinIO, sinon le crée via Boto3 50]"""
+    """
+    Initialise le stockage S3 (MinIO).
+    Vérifie si le bucket 'mlflow' existe, sinon le crée automatiquement via Boto3.
+    """
     s3 = boto3.client("s3", endpoint_url=os.environ["MLFLOW_S3_ENDPOINT_URL"])
     buckets = [b["Name"] for b in s3.list_buckets()["Buckets"]]
     if "mlflow" not in buckets:
@@ -38,6 +43,10 @@ def prepare_minio():
 
 
 def train_and_register():
+    """
+    Entraîne un modèle RandomForest sur le dataset Iris et l'enregistre dans MLflow.
+    Assigne automatiquement l'alias défini en variable d'environnement à la nouvelle version.
+    """
     # Configuration du serveur de tracking
     mlflow.set_tracking_uri(MLFLOW_URI)
     mlflow.set_experiment("Iris_Factory")
