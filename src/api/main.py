@@ -48,13 +48,20 @@ class IrisData(BaseModel):
 
 def load_production_model():
     """
-    Vérifie l'alias cible dans MLflow et recharge le modèle en mémoire si nécessaire.
+    Charge ou met à jour le modèle MLflow en mémoire vive (Hot-Reloading).
+
+    Cette fonction vérifie l'alias défini dans l'environnement (ex: 'production').
+    Si la version sur le serveur MLflow est plus récente que celle en cache,
+    elle télécharge le nouveau binaire. Sinon, elle conserve le modèle actuel pour
+    minimiser la latence.
 
     Returns:
-        tuple: Un tuple contenant l'objet modèle chargé et la version sous forme de chaîne.
+        tuple: Un tuple contenant :
+            - model (mlflow.pyfunc.PyFuncModel): Le modèle Scikit-Learn prêt pour l'inférence.
+            - version (str): Le numéro de version actuellement chargé (ex: "v3").
 
     Raises:
-        HTTPException: Si le serveur MLflow est injoignable ou l'alias introuvable.
+        HTTPException: Erreur 404 si le serveur MLflow est injoignable ou si l'alias n'existe pas.
     """
     try:
         # 1. On demande quelle est la version actuelle de l'alias 'Production' [cite: 108]
@@ -76,13 +83,30 @@ def load_production_model():
 @app.post("/predict")
 def predict(data: IrisData):
     """
-    Exécute une inférence sur les données fournies en utilisant le modèle de production.
+    Exécute une inférence sur les dimensions d'une fleur Iris.
 
     Args:
-        data (IrisData): Les caractéristiques de la fleur Iris.
+        data (IrisData): Objet Pydantic contenant les 4 dimensions de la fleur en centimètres.
 
     Returns:
-        dict: La classe prédite, la version du modèle utilisée et le statut de la requête.
+        dict: Le résultat de la prédiction, incluant la classe, la version du modèle et le statut.
+
+    Example:
+        Voici un exemple de requête valide, basé sur une fleur de type Virginica issue de notre dataset de test :
+
+        .. code-block:: python
+
+            import requests
+
+            payload = {
+                "sepal_length": 7.7,
+                "sepal_width": 2.6,
+                "petal_length": 6.9,
+                "petal_width": 2.3
+            }
+            response = requests.post("http://localhost:8000/predict", json=payload)
+            print(response.json())
+            # Output attendu : {"prediction": 2, "model_version": "1", "status": "success"}
     """
     # Récupération dynamique du modèle
     model, version = load_production_model()

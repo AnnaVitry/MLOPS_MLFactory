@@ -15,13 +15,23 @@ API_URL = os.getenv("API_URL", "http://localhost:8000/predict")
 
 def get_prediction(data: dict) -> dict | None:
     """
-    Envoie les données saisies à l'API FastAPI et récupère la prédiction.
+    Gère la communication HTTP entre l'interface Streamlit et l'API FastAPI.
 
     Args:
-        data (dict): Dictionnaire contenant les dimensions de la fleur.
+        data (dict): Un dictionnaire contenant les dimensions capturées via le formulaire UI.
+            Doit correspondre strictement au schéma Pydantic `IrisData` de l'API.
 
     Returns:
-        dict | None: La réponse JSON de l'API, ou None si l'API est injoignable.
+        dict | None: Le dictionnaire JSON renvoyé par l'API si le code HTTP est 200.
+            Retourne `None` si une exception réseau se produit (timeout, connection refused).
+
+    Example:
+        .. code-block:: python
+
+            payload = {"sepal_length": 5.1, "sepal_width": 3.5, "petal_length": 1.4, "petal_width": 0.2}
+            result = get_prediction(payload)
+            if result:
+                print(result["model_version"])
     """
     try:
         # Un timeout est crucial en production pour ne pas bloquer l'interface

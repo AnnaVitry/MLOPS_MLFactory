@@ -32,8 +32,14 @@ model_alias = os.getenv("MODEL_ALIAS", "production")
 
 def prepare_minio():
     """
-    Initialise le stockage S3 (MinIO).
-    Vérifie si le bucket 'mlflow' existe, sinon le crée automatiquement via Boto3.
+    Initialise la connexion Boto3 avec le stockage S3 local (MinIO).
+
+    Vérifie l'existence du bucket de destination (défini par défaut à 'mlflow').
+    Si le bucket est absent (ex: lors du premier lancement de `docker compose up`),
+    il est créé automatiquement pour éviter le crash du log d'artefacts MLflow.
+
+    Raises:
+        EndpointConnectionError: Si le conteneur MinIO n'est pas encore prêt à accepter des connexions sur le port 9000.
     """
     s3 = boto3.client("s3", endpoint_url=os.environ["MLFLOW_S3_ENDPOINT_URL"])
     buckets = [b["Name"] for b in s3.list_buckets()["Buckets"]]
@@ -44,8 +50,19 @@ def prepare_minio():
 
 def train_and_register():
     """
-    Entraîne un modèle RandomForest sur le dataset Iris et l'enregistre dans MLflow.
-    Assigne automatiquement l'alias défini en variable d'environnement à la nouvelle version.
+    Entraîne le modèle de classification et l'archive dans le Model Registry.
+
+    Ce pipeline effectue les opérations suivantes :
+    1. Chargement et split (80/20) du dataset Iris natif de Scikit-Learn.
+    2. Entraînement d'un RandomForestClassifier.
+    3. Suivi des hyperparamètres (n_estimators) et métriques (accuracy) via MLflow.
+    4. Enregistrement de l'artefact (.pkl) sur le bucket S3 (MinIO).
+    5. Assignation automatique de l'alias de production à cette nouvelle version.
+
+    Note:
+        Pour tester un modèle linéaire (ex: LogisticRegression), modifiez
+        l'instanciation du modèle dans cette fonction. Le Hot-Reload de l'API
+        détectera le changement dynamiquement lors du prochain appel.
     """
     # Configuration du serveur de tracking
     mlflow.set_tracking_uri(MLFLOW_URI)
