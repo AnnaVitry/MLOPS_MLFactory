@@ -1,9 +1,8 @@
 name: CD Pipeline
 
-# Le pont magique : Ce workflow écoute le workflow CI
 on:
   workflow_run:
-    workflows: ["CI Pipeline"] # Doit correspondre exactement au 'name' du ci.yml
+    workflows: ["CI Pipeline"]
     types:
       - completed
     branches:
@@ -17,7 +16,6 @@ jobs:
     name: Deploy Sphinx to GH Pages
     runs-on: ubuntu-latest
     
-    # LA RÈGLE D'OR : On ne déploie QUE si la CI est au vert
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
     steps:
@@ -29,10 +27,20 @@ jobs:
         with:
           python-version: "3.12"
           
-      - name: Build de la version finale
+      - name: Build de la version finale (avec venv isolé)
         run: |
           pip install uv
-          uv pip install --system sphinx sphinx-rtd-theme myst-parser
+          
+          # 1. Création de l'environnement virtuel
+          uv venv
+          
+          # 2. Activation de l'environnement
+          source .venv/bin/activate
+          
+          # 3. Installation SANS le flag --system
+          uv pip install sphinx sphinx-rtd-theme myst-parser
+          
+          # 4. Compilation
           cd docs
           make html
           

@@ -34,18 +34,20 @@ jobs:
       - name: Récupération du code
         uses: actions/checkout@v4
         
-      - name: Installation de uv et Ruff
+      - name: Configuration de Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installation et Linting
+        # Création d'un venv, activation, installation et exécution
         run: |
           pip install uv
-          uv pip install --system ruff
-          
-      - name: Vérification du formatage (PEP 8)
-        # Le flag --check fait échouer le test si un fichier a besoin d'être reformaté
-        run: ruff format --check .
-        
-      - name: Analyse stricte (Linting)
-        # Vérifie les imports inutilisés, les variables fantômes, etc.
-        run: ruff check .
+          uv venv
+          source .venv/bin/activate
+          uv pip install ruff
+          ruff format --check .
+          ruff check .
 
   # ==========================================
   # 3. Crash-test de la documentation
@@ -53,16 +55,20 @@ jobs:
   test-docs:
     name: Test Build Sphinx
     runs-on: ubuntu-latest
-    # Exigence stricte : On attend que Gitleaks ET Ruff soient au vert
     needs: [security, lint] 
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          
       - name: Installation et Compilation
+        # Même logique : environnement virtuel isolé pour Sphinx
         run: |
           pip install uv
-          uv pip install --system sphinx sphinx-rtd-theme myst-parser
+          uv venv
+          source .venv/bin/activate
+          uv pip install sphinx sphinx-rtd-theme myst-parser
           cd docs
           make html
