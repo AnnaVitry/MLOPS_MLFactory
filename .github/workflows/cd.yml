@@ -1,0 +1,43 @@
+name: CD Pipeline
+
+# Le pont magique : Ce workflow écoute le workflow CI
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"] # Doit correspondre exactement au 'name' du ci.yml
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-docs:
+    name: Deploy Sphinx to GH Pages
+    runs-on: ubuntu-latest
+    
+    # LA RÈGLE D'OR : On ne déploie QUE si la CI est au vert
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+        
+      - name: Configuration Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          
+      - name: Build de la version finale
+        run: |
+          pip install uv
+          uv pip install --system sphinx sphinx-rtd-theme myst-parser
+          cd docs
+          make html
+          
+      - name: Déploiement GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/build/html
