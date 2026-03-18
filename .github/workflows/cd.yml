@@ -15,12 +15,54 @@ env:
 
 # Définition des permissions globales nécessaires
 permissions:
-  # contents: write    # Pour pousser la doc sur gh-pages
+  contents: write    # Pour pousser la doc sur gh-pages
   packages: write   # Pour pousser les images Docker sur GHCR
   pages: write      # Autorise l'écriture sur GitHub Pages
   id-token: write   # Autorise l'authentification sécurisée
 
 jobs:
+  # ==========================================
+  # MISSION 1 : DÉPLOIEMENT NATIF DE LA DOCUMENTATION
+  # ==========================================
+  deploy-docs:
+    name: 📚 Deploy Sphinx to GH Pages
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    # Définit l'environnement cible pour récupérer l'URL à la fin
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+        
+      - name: Configuration Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          
+      - name: Build de la version finale
+        run: |
+          pip install uv
+          uv venv
+          source .venv/bin/activate
+          uv pip install sphinx sphinx-rtd-theme myst-parser
+          cd docs
+          make html
+          
+      - name: Configuration native GitHub Pages
+        uses: actions/configure-pages@v5
+        
+      - name: Upload de l'artefact (Le site web)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs/build/html'
+          
+      - name: Déploiement en ligne
+        id: deployment
+        uses: actions/deploy-pages@v4
   # ==========================================
   # BUILD & PUSH DES IMAGES DOCKER
   # ==========================================
