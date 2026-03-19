@@ -76,7 +76,6 @@ jobs:
   # ==========================================================================
   # 4. Pytests (sans coverage parce que c'est pas pour le badge qu'on le fait)
   # ==========================================================================
-jobs:
   test:
     runs-on: ubuntu-latest
     steps:
