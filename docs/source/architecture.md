@@ -20,3 +20,24 @@ L'infrastructure de la ML Factory repose sur une architecture de microservices c
 4. **Streamlit (Front-End)**
    * Rôle : Interface utilisateur.
    * Communique de manière asynchrone avec FastAPI.
+
+## Arborescence du Projet
+
+```bash
+MLOPS_MLFACTORY/
+├── data/                   # Données générées pour les tests (partagé via volume Docker)
+│   └── iris_test.csv       # Fichier CSV utilisé par le Front-end
+├── src/
+│   ├── api/                # Backend FastAPI
+│   │   ├── main.py         # Logique de rechargement à chaud et inférence
+│   │   └── Dockerfile      # Image pour l'API
+│   ├── front/              # Interface Streamlit
+│   │   ├── app.py          # Visualisation et interaction utilisateur
+│   │   └── Dockerfile      # Image pour le Front-end
+│   └── train/              # Pipeline d'entraînement
+│       └── train.py        # Entraînement, log MLflow et gestion des alias
+├── .env                    # Variables d'environnement (Secrets et URLs)
+├── docker-compose.yml      # Orchestration des services (MinIO, MLflow, API, Front)
+├── generate_data.py        # Script de création du dataset de test
+└── pyproject.toml          # Gestion des dépendances avec uv
+```

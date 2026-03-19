@@ -8,6 +8,9 @@ Bienvenue dans la documentation de ML Factory !
 
 L'usine MLOps Iris est un projet complet de bout en bout, démontrant les meilleures pratiques de conteneurisation, de suivi d'expériences et de déploiement continu.
 
+.. include:: ../../README.md
+   :parser: myst_parser.sphinx_
+
 .. toctree::
    :maxdepth: 2
    :caption: Documentation Générale:

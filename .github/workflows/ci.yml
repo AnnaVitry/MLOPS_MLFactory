@@ -72,3 +72,29 @@ jobs:
           uv pip install sphinx sphinx-rtd-theme myst-parser
           cd docs
           make html
+
+  # ==========================================================================
+  # 4. Pytests (sans coverage parce que c'est pas pour le badge qu'on le fait)
+  # ==========================================================================
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+      
+      - name: Installation de uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          
+      - name: Configuration de Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          
+      - name: Synchronisation de l'environnement (avec dépendances dev)
+        run: uv sync --dev
+        
+      - name: Exécution des tests (Tolérance Zéro)
+        run: uv run pytest tests/

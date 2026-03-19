@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   # ==========================================
-  # MISSION 1 : DÉPLOIEMENT NATIF DE LA DOCUMENTATION
+  # DÉPLOIEMENT NATIF DE LA DOCUMENTATION
   # ==========================================
   deploy-docs:
     name: 📚 Deploy Sphinx to GH Pages
@@ -63,6 +63,7 @@ jobs:
       - name: Déploiement en ligne
         id: deployment
         uses: actions/deploy-pages@v4
+
   # ==========================================
   # BUILD & PUSH DES IMAGES DOCKER
   # ==========================================
